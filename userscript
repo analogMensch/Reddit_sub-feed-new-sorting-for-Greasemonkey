@@ -1,0 +1,40 @@
+// ==UserScript==
+// @name        reddit : subreddit new sorting
+// @match       *://*.reddit.com/r/*
+// @run-at      document-start
+// @grant       none
+// ==/UserScript==
+
+var fireOnHashChangesToo    = true;
+var pageURLCheckTimer       = setInterval (
+    function () {
+        if (   this.lastPathStr  !== location.pathname
+            || this.lastQueryStr !== location.search
+            || (fireOnHashChangesToo && this.lastHashStr !== location.hash)
+        ) {
+            this.lastPathStr  = location.pathname;
+            this.lastQueryStr = location.search;
+            this.lastHashStr  = location.hash;
+            gmMain ();
+        }
+    }
+    , 100
+);
+function gmMain () {
+  var oldURL  = window.location.pathname;
+  if (!/comments/.test(oldURL) && !/user/.test(oldURL) && !/best/.test(oldURL) && !/hot/.test(oldURL) && !/top/.test(oldURL) && !/rising/.test(oldURL) && !/submit/.test(oldURL) && !/wiki/.test(oldURL) && !/search/.test(oldURL) && !/messages/.test(oldURL) && !/settings/.test(oldURL)) {
+    console.info("reddit sub");
+    if (!/\/new\/$/.test(oldURL)) {
+      var newURL  = window.location.protocol + "//"
+                  + window.location.host
+                  + oldURL + "new/"
+                  + window.location.search
+                  + window.location.hash
+      console.info("sorting active: " + newURL);
+      window.location.replace (newURL);
+    }
+    else {
+      console.info("sorting done");
+    }
+  }
+}
