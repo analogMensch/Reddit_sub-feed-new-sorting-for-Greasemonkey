@@ -1,40 +1,43 @@
 // ==UserScript==
-// @name        reddit : subreddit new sorting
-// @match       *://*.reddit.com/r/*
+// @name        Reddit : sub feed new sorting
+// @match       *://*.reddit.com/*
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
-
-var fireOnHashChangesToo    = true;
-var pageURLCheckTimer       = setInterval (
-    function () {
-        if (   this.lastPathStr  !== location.pathname
-            || this.lastQueryStr !== location.search
-            || (fireOnHashChangesToo && this.lastHashStr !== location.hash)
-        ) {
-            this.lastPathStr  = location.pathname;
-            this.lastQueryStr = location.search;
-            this.lastHashStr  = location.hash;
-            gmMain ();
-        }
+var pageURLCheckTimer = setInterval (
+	function () {
+		var oldURL = window.location.pathname;
+    var query = window.location.search;
+    const sub = new RegExp("/r/*/","g");
+    const pathcounter = new RegExp("/","g");
+    const exception = ["submit","wiki"];  //exception list
+    if (oldURL.match(sub) && (oldURL.match(pathcounter) || []).length == 3) {
+      for (let i = 0; i < exception.length; i++) {
+        if (oldURL.match(exception[i])) {
+          clearInterval(pageURLCheckTimer);
+          break;
+      	}
+      	else {
+      		var newURL  = window.location.protocol + "//" + window.location.host + oldURL + "new/";
+      		console.info("SUB FEED sorting active: " + newURL);
+      		document.body.style.display = "none";
+      		clearInterval(pageURLCheckTimer);
+      		window.location.replace(newURL);
+      	}
+    	}
     }
-    , 100
+    if (oldURL.match(sub) && oldURL.match("hot/") && query.match("created")) {
+      var newURL  = window.location.protocol + "//" + window.location.host + oldURL.replace("hot/","");
+     	console.info("SUB FEED sorting active: " + newURL);
+      document.body.style.display = "none";
+      setTimeout(
+        function() {
+      		clearInterval(pageURLCheckTimer);
+      		window.location.replace(newURL);
+      	},
+        5000
+      );
+    }
+  },
+  100
 );
-function gmMain () {
-  var oldURL  = window.location.pathname;
-  if (!/comments/.test(oldURL) && !/user/.test(oldURL) && !/best/.test(oldURL) && !/hot/.test(oldURL) && !/top/.test(oldURL) && !/rising/.test(oldURL) && !/submit/.test(oldURL) && !/wiki/.test(oldURL) && !/search/.test(oldURL) && !/messages/.test(oldURL) && !/settings/.test(oldURL)) {
-    console.info("reddit sub");
-    if (!/\/new\/$/.test(oldURL)) {
-      var newURL  = window.location.protocol + "//"
-                  + window.location.host
-                  + oldURL + "new/"
-                  + window.location.search
-                  + window.location.hash
-      console.info("sorting active: " + newURL);
-      window.location.replace (newURL);
-    }
-    else {
-      console.info("sorting done");
-    }
-  }
-}
